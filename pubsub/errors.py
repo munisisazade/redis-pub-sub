@@ -1,6 +1,6 @@
 
 
-class b(Exception):
+class Handler(Exception):
     def __init__(self, message, errors):
 
         # Call the base class constructor with the parameters it needs
