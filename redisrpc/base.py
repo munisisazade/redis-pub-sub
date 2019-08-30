@@ -17,14 +17,16 @@ class BasePubSub(object):
             Initialize and subscribe channel
         """
         self.rdb = redis.StrictRedis.from_url(os.getenv("REDIS_URI"))
+        self.check_connection_redis()
         self.channel = channel_name
         self.pubsub = self.rdb.pubsub()
         self.events = {}
         self.token = str(uuid.uuid4())
 
-    @classmethod
-    def check_redis(cls):
-        obj = cls("test")
+    def check_connection_redis(self):
+        self.rdb.set("testing", 1)
+        assert self.rdb.get("testing") == 1
+        self.rdb.delete("testing")
 
     def listen(self):
         print("Pubsub is listen...")
@@ -96,6 +98,3 @@ class BasePubSub(object):
                     if data["token"] != self.token:
                         self.pubsub.unsubscribe(self.channel)
                         return data["data"]
-
-
-

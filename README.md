@@ -7,13 +7,14 @@ Redis RPC with PubSub simple lightweight
 ### Listener interface example
 ```python
 import os
-from redispubsub import RedisRPC
+from redisrpc import RedisRPC
 # Add REDIS_URI application enviroment
 
 os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")
 
 rpc = RedisRPC("channel_name") # rename what you want
 
+# event lists
 def calc_square(response): # `response` is a sender data
     power_of_number = response**2
     return power_of_number # sent to client
@@ -29,7 +30,8 @@ rpc.listen()
 ```
 ### Client interface
 ```python
-from redispubsub import RedisRPC
+import os
+from redisrpc import RedisRPC
 # Add REDIS_URI application enviroment
 
 os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")

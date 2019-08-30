@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="redispubsub",
-    version=__import__("redispubsub").VERSION,
+    version=__import__("redisrpc").VERSION,
     author="Munis Isazade",
     author_email="munisisazade@gmail.com",
     description="Redis RPC server for microservices",
