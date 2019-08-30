@@ -4,6 +4,11 @@ Redis RPC with PubSub simple lightweight
 
 # Getting Started
 
+Install Redis rpc
+```bash
+pip install redispubsub
+```
+
 ### Listener interface example
 ```python
 import os
