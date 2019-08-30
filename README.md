@@ -9,7 +9,7 @@ Install Redis rpc
 pip install redispubsub
 ```
 
-### Listener interface example
+### Server example
 ```python
 import os
 from redisrpc import RedisRPC
@@ -41,7 +41,7 @@ from redisrpc import RedisRPC
 
 os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")
 
-pub = RedisRPC("channel_name") # channel name must be same as listener
+pub = RedisRPC("channel_name") # channel name must be same as server
 square = pub.send("square", 5) # send data to spesific event 
 cube = pub.send("cube", 3) 
 
