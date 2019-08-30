@@ -37,17 +37,19 @@ rpc.listen()
 ```python
 import os
 from redisrpc import RedisRPC
-# Add REDIS_URI application enviroment variable
+
+# Add REDIS_URI application enviroment
 
 os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")
 
-pub = RedisRPC("channel_name") # channel name must be same as server
-square = pub.send("square", 5) # send data to spesific event 
-cube = pub.send("cube", 3) 
+rpc = RedisRPC("channel_name")  # channel name must be same as server
+square = rpc.send("square", 5)  # send data to spesific event
+cube = rpc.send("cube", 3)
 
 # response from server handlers
-print(square) # 25
-print(cube) # 27
+print(square)  # 25
+print(cube)  # 27
+
 ```
 
 # Contributing
