@@ -20,8 +20,8 @@ def calc_square(response): # `response` is a sender data
     return power_of_number # sent to client
     
 def calc_cube(response): # `response` is a sender data
-    power_of_number = response**2
-    return power_of_number # sent to client
+    cube_of_number = response**3
+    return cube_of_number # sent to client
 
 rpc.register(calc_square, "square") # event name default function name
 rpc.register(calc_cube, "cube")
