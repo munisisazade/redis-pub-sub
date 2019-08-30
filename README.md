@@ -8,7 +8,7 @@ Redis RPC with PubSub simple lightweight
 ```python
 import os
 from redisrpc import RedisRPC
-# Add REDIS_URI application enviroment
+# Add REDIS_URI application enviroment variable
 
 os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")
 
@@ -32,7 +32,7 @@ rpc.listen()
 ```python
 import os
 from redisrpc import RedisRPC
-# Add REDIS_URI application enviroment
+# Add REDIS_URI application enviroment variable
 
 os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")
 
