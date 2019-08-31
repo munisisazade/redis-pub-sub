@@ -28,9 +28,15 @@ class BasePubSub(object):
         self.token = str(uuid.uuid4())
 
     def check_connection_redis(self):
-        self.rdb.set("testing", 1)
-        assert self.rdb.get("testing") == 1
-        self.rdb.delete("testing")
+        try:
+            self.rdb.set("testing", 1)
+            assert int(self.rdb.get("testing")) == 1
+            self.rdb.delete("testing")
+        except:
+            raise PermissionError(
+                "Cannot read write redis database bellow credentials\n"
+                f"redis_uri: {os.getenv('REDIS_URI')}"
+            )
 
     def listen(self):
         print("Pubsub is listen...")
