@@ -90,7 +90,7 @@ class BasePubSub(object):
         decode = self.__encode_base64(data)
         self.rdb.publish(self.channel, decode)
 
-    def send(self, event_name, data):
+    def send(self, event_name, data, wait_response_time=2):
         resp = {
             "token": self.token,
             "event_name": event_name,
@@ -99,6 +99,7 @@ class BasePubSub(object):
         decode = self.__encode_base64(resp)
         self.rdb.publish(self.channel, decode)
         print("Send")
+        send_time = time.time()
         self.pubsub.subscribe(self.channel)
         while True:
             message = self.pubsub.get_message()
@@ -108,3 +109,7 @@ class BasePubSub(object):
                     if data["token"] != self.token:
                         self.pubsub.unsubscribe(self.channel)
                         return data["data"]
+            response_time = time.time()
+            if int(response_time - send_time) > wait_response_time:
+                print("Cannot get response from server handler")
+                return None
