@@ -1,9 +1,13 @@
-import redis
 import os
 import time
 import base64
 import json
 import uuid
+
+try:
+    import redis
+except:
+    pass
 
 
 class BasePubSub(object):

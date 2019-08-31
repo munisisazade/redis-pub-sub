@@ -13,10 +13,18 @@ setuptools.setup(
     license='MIT',
     url="https://github.com/munisisazade/redispubsub",
     install_requires=["redis"],
+    extras_require={
+        "redis": ["redis"]
+    },
     platforms=['any'],
     packages=setuptools.find_packages(),
     classifiers=[
+        "Intended Audience :: Developers",
+        "Programming Language :: Python",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.6",
+        "Programming Language :: Python :: 3.7",
+        "Programming Language :: Python :: 3 :: Only",
         "License :: OSI Approved :: MIT License",
         "Operating System :: OS Independent",
     ],
