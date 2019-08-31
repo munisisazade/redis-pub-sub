@@ -10,6 +10,7 @@ setuptools.setup(
     author_email="munisisazade@gmail.com",
     description="Redis RPC server for microservices",
     long_description=long_description,
+    long_description_content_type="text/markdown",
     license='MIT',
     url="https://github.com/munisisazade/redispubsub",
     install_requires=["redis"],
