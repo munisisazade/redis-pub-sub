@@ -3,6 +3,12 @@ import time
 import base64
 import json
 import uuid
+import platform
+import itertools
+import datetime
+import traceback
+from urllib.parse import urlparse
+from redisrpc.version import VERSION
 
 try:
     import redis
@@ -39,31 +45,87 @@ class BasePubSub(object):
             )
 
     def listen(self):
-        print("Pubsub is listen...")
-        self.pubsub.subscribe(self.channel)
-        while True:
-            message = self.pubsub.get_message()
-            if message:
-                if message["type"] == "message":
-                    data = self.__convert_to_python(message["data"])
-                    if data["token"] != self.token:
-                        print("Yes")
-                        event_name = data["event_name"]
-                        response_data = data["data"]
-                        self.event_handler(event_name, response_data)
-            time.sleep(0.3)
+        try:
+            self.print_start()
+            self.log_print("Pubsub is listen...")
+            self.pubsub.subscribe(self.channel)
+            while True:
+                message = self.pubsub.get_message()
+                if message:
+                    if message["type"] == "message":
+                        data = self.__convert_to_python(message["data"])
+                        if data["token"] != self.token:
+                            self.log_print("new request", type="DEBUG")
+                            event_name = data["event_name"]
+                            response_data = data["data"]
+                            self.event_handler(event_name, response_data)
+                time.sleep(0.3)
+        except KeyboardInterrupt:
+            self.log_print("Pubsub is stoping...")
+            time.sleep(1)
+            self.log_print("Shutdown")
 
     def event_handler(self, event_name, data):
         if self.events.get(event_name, False):
             event = self.events.get(event_name)
-            response = event(data)
-            if response:
-                self.__send_reponse({
-                    "token": self.token,
-                    "event_name": event_name,
-                    "data": response
-                })
-                # self.
+            try:
+                response = event(data)
+                if response:
+                    self.log_print(f"Success response from {event_name}", "DEBUG")
+                    self.__send_reponse({
+                        "token": self.token,
+                        "event_name": event_name,
+                        "data": response
+                    })
+                else:
+                    self.log_print(f"Empty response from {event_name}", "WARNING")
+            except:
+                self.log_print(traceback.format_exc(), "FATAL")
+        else:
+            self.log_print(f"Can't find `{event_name}` event name", "ERROR")
+            return {
+                "error": f"Can't find `{event_name}` event name"
+            }
+
+    def print_start(self):
+        start_text = f"""
+                _._                                                  
+           _.-``__ ''-._                                             
+      _.-``    `.  `_.  ''-._           Redis Publish–subscribe Remote Procedure Call system
+  .-`` .-```.  ```\/    _.,_ ''-._      Connection: {self.connection_uri()}                             
+ (    '      ,       .-`  | `,    )     Channel name: {self.channel} 
+ |`-._`-...-` __...-.``-._|'` _.-'|     Channel token: {self.token}
+ |    `-._   `._    /     _.-'    |     Hostname: {platform.node()}
+  `-._    `-._  `-./  _.-'    _.-'      Running                             
+ |`-._`-._    `-.__.-'    _.-'_.-'|     PID: {os.getpid()}                             
+ |    `-._`-._        _.-'_.-'    |     Name: RedisPubSub {VERSION}v        
+  `-._    `-._`-.__.-'_.-'    _.-'            https://github.com/munisisazade/redis-pub-sub                             
+ |`-._`-._    `-.__.-'    _.-'_.-'|                                  
+ |    `-._`-._        _.-'_.-'    |                                  
+  `-._    `-._`-.__.-'_.-'    _.-'                                   
+      `-._    `-.__.-'    _.-'                                       
+          `-._        _.-'                                           
+              `-.__.-'                                   
+"""
+        print(start_text)
+        print("[events]")
+        start_count = itertools.count(1)
+        for event_name in self.events.keys():
+            print(f"{next(start_count)})", event_name)
+        print("")
+        self.log_print("Starting...")
+
+    def log_print(self, text, type="INFO"):
+        now = datetime.datetime.today()
+        print(f"[{now.strftime('%Y-%m-%d %H:%M:%f')}: {type}] {text}")
+
+    def connection_uri(self):
+        uri = urlparse(os.getenv("REDIS_URI"))
+        host = uri.netloc
+        paswd = ""
+        if ":" in host and "@" in host:
+            paswd = host[host.index(":"):host.index("@")]
+        return os.getenv("REDIS_URI").replace(paswd, "****")
 
     def __encode_base64(self, data):
         return base64.b64encode(json.dumps(data).encode("utf-8"))
