@@ -12,7 +12,7 @@ setuptools.setup(
     long_description=long_description,
     long_description_content_type="text/markdown",
     license='MIT',
-    url="https://github.com/munisisazade/redispubsub",
+    url="https://github.com/munisisazade/redis-pub-sub",
     install_requires=["redis"],
     extras_require={
         "redis": ["redis"]
