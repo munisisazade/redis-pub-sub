@@ -9,23 +9,25 @@ import datetime
 import traceback
 from urllib.parse import urlparse
 from redisrpc.version import VERSION
+from redisrpc.errors import ChannelActiveException
 
 try:
     import redis
-except:
-    pass
+except ImportError:
+    raise ImportError("redis package must be installed")
 
 
 class BasePubSub(object):
     """
-        Base publish–subscribe is a
-        messaging pattern class
+    Base publish–subscribe is a
+    messaging pattern class
     """
 
     def __init__(self, channel_name):
         """
-            Initialize and subscribe channel
+        Initialize and subscribe channel
         """
+        self.validate_env()
         self.rdb = redis.StrictRedis.from_url(os.getenv("REDIS_URI"))
         self.check_connection_redis()
         self.channel = channel_name
@@ -44,7 +46,19 @@ class BasePubSub(object):
                 f"redis_uri: {os.getenv('REDIS_URI')}"
             )
 
+    def validate_env(self):
+        if not os.getenv("REDIS_URI"):
+            raise ValueError("REDIS_URI environment variable must be set")
+
+    def check_before_connect(self):
+        # Get the list of currently active channels
+        active_channels = self.rdb.pubsub_channels()
+        if self.channel.encode("utf-8") in active_channels:
+            print("Please use different channel name or kill existing channel")
+            raise ChannelActiveException(self.channel)
+
     def listen(self):
+        self.check_before_connect()
         try:
             self.print_start()
             self.log_print("Pubsub is listen...")
@@ -72,20 +86,20 @@ class BasePubSub(object):
                 response = event(data)
                 if response:
                     self.log_print(f"Success response from {event_name}", "DEBUG")
-                    self.__send_reponse({
-                        "token": self.token,
-                        "event_name": event_name,
-                        "data": response
-                    })
+                    self.__send_reponse(
+                        {
+                            "token": self.token,
+                            "event_name": event_name,
+                            "data": response,
+                        }
+                    )
                 else:
                     self.log_print(f"Empty response from {event_name}", "WARNING")
             except:
                 self.log_print(traceback.format_exc(), "FATAL")
         else:
             self.log_print(f"Can't find `{event_name}` event name", "ERROR")
-            return {
-                "error": f"Can't find `{event_name}` event name"
-            }
+            return {"error": f"Can't find `{event_name}` event name"}
 
     def print_start(self):
         start_text = f"""
@@ -122,10 +136,11 @@ class BasePubSub(object):
     def connection_uri(self):
         uri = urlparse(os.getenv("REDIS_URI"))
         host = uri.netloc
-        paswd = ""
         if ":" in host and "@" in host:
-            paswd = host[host.index(":"):host.index("@")]
-        return os.getenv("REDIS_URI").replace(paswd, "****")
+            paswd = host[host.index(":") : host.index("@")]
+            return os.getenv("REDIS_URI").replace(paswd, "***")
+        else:
+            return os.getenv("REDIS_URI")
 
     def __encode_base64(self, data):
         return base64.b64encode(json.dumps(data).encode("utf-8"))
@@ -153,11 +168,7 @@ class BasePubSub(object):
         self.rdb.publish(self.channel, decode)
 
     def send(self, event_name, data, wait_response_time=2):
-        resp = {
-            "token": self.token,
-            "event_name": event_name,
-            "data": data
-        }
+        resp = {"token": self.token, "event_name": event_name, "data": data}
         decode = self.__encode_base64(resp)
         self.rdb.publish(self.channel, decode)
         print("Send")

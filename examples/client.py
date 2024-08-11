@@ -3,7 +3,7 @@ from redisrpc import RedisRPC
 
 # Add REDIS_URI application enviroment
 
-os.environ.setdefault("REDIS_URI", "redis://:PpkJfHHNph9X5hB5@localhost:6379/0")
+os.environ.setdefault("REDIS_URI", "redis://localhost:6379/0")
 
 rpc = RedisRPC("channel_name")  # channel name must be same as server
 square = rpc.send("square", 5)  # send data to spesific event
